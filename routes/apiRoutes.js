@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const fs = require('fs')
 const { v4: uuidv4 } = require('uuid');
+const { readFromFile, writeToFile} = require('../helpers/fsUtils')
 
 
 router.get('/notes',  (req, res) => {
@@ -28,15 +29,19 @@ router.post('/notes', (req, res) => {
     });
 })
 
-router.delete('notes/:id', (req, res) => {
-    const { id } = req.params;
-    const deleted = notes.find(note => note.id == id)
-    if (deleted) {
-        notes = notes
-    } else {
-        res.status(404).json({ message: "Note does not exist"})
-    }
-})
+router.delete("/notes/:id", function(req, res) {
+    readFromFile('./db/db.json').then((data) =>{
+        var list = JSON.parse(data);
+        var newArray = []
+        for (i=0; i<list.length; i++){
+            if ( req.params.id !== list[i].id ){
+                newArray.push(list[i])
+            }
+        };
+        writeToFile('./db/db.json', newArray);
+        res.json({message: 'Successfully Added'})
+    })
+   });
 
 // delete /api/notes/:id
 module.exports = router
